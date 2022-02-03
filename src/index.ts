@@ -8,6 +8,11 @@ import { buildSchema } from "type-graphql";
 import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
 import { UserResolver } from './resolvers/user';
+import { createClient } from 'redis';
+import session from 'express-session';
+import connectRedis from 'connect-redis'
+
+
 
 const main = async () => {
     
@@ -16,6 +21,27 @@ const main = async () => {
     
     const app = express();
 
+    const RedisStore = connectRedis(session)
+    const redisClient = createClient()
+
+    app.use(
+    session({
+        name: 'qid',
+        store: new RedisStore({ 
+            client: redisClient as any,
+            disableTouch: true
+         }),
+         cookie: {
+             maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
+             httpOnly: true,
+             secure: __prod__ //cookie only works in https
+         },
+        saveUninitialized: false,
+        secret: '23jf2o3fi2o3fj09jfwelfkj0923',
+        resave: false,
+    })
+    )
+
     const apolloServer = new ApolloServer({
         schema: await buildSchema({
             resolvers: [HelloResolver, PostResolver, UserResolver],
@@ -23,6 +49,7 @@ const main = async () => {
         }),
         context: () => ({ em: orm.em })
     })
+
     await apolloServer.start()
     apolloServer.applyMiddleware({ app })
 
