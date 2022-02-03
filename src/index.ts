@@ -11,6 +11,7 @@ import { UserResolver } from './resolvers/user';
 import { createClient } from 'redis';
 import session from 'express-session';
 import connectRedis from 'connect-redis'
+import { MyContext } from './types';
 
 
 
@@ -34,7 +35,8 @@ const main = async () => {
          cookie: {
              maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
              httpOnly: true,
-             secure: __prod__ //cookie only works in https
+             sameSite: 'lax', // protects csrf
+             secure: __prod__ // cookie only works in https
          },
         saveUninitialized: false,
         secret: '23jf2o3fi2o3fj09jfwelfkj0923',
@@ -47,7 +49,7 @@ const main = async () => {
             resolvers: [HelloResolver, PostResolver, UserResolver],
             validate: false
         }),
-        context: () => ({ em: orm.em })
+        context: ({req, res}): MyContext => ({ em: orm.em, req, res })
     })
 
     await apolloServer.start()

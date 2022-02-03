@@ -31,6 +31,7 @@ const main = async () => {
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
             httpOnly: true,
+            sameSite: 'lax',
             secure: constants_1.__prod__
         },
         saveUninitialized: false,
@@ -42,7 +43,7 @@ const main = async () => {
             resolvers: [hello_1.HelloResolver, post_1.PostResolver, user_1.UserResolver],
             validate: false
         }),
-        context: () => ({ em: orm.em })
+        context: ({ req, res }) => ({ em: orm.em, req, res })
     });
     await apolloServer.start();
     apolloServer.applyMiddleware({ app });
