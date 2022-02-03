@@ -13,7 +13,11 @@ import session from 'express-session';
 import connectRedis from 'connect-redis'
 import { MyContext } from './types';
 
-
+declare module 'express-session' {
+    interface SessionData {
+        userId: any;
+    }
+}
 
 const main = async () => {
     
@@ -32,7 +36,7 @@ const main = async () => {
             client: redisClient as any,
             disableTouch: true
          }),
-         cookie: {
+        cookie: {
              maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
              httpOnly: true,
              sameSite: 'lax', // protects csrf
